@@ -274,13 +274,11 @@
         const sections = document.querySelectorAll('.section');
         const navButtons = document.querySelectorAll('.nav-button');
         
-        // Objeto para almacenar los puntos de cada función
         let machinePoints = {
             'x*x': [],
             'x+2': [],
             '2*x': []
         };
-        // Objeto para almacenar las instancias de Chart
         let charts = {};
 
         function showSection(sectionId) {
@@ -314,35 +312,35 @@
             ctx.fillStyle = '#383430';
 
             // Dibujar Conjunto A
-            ctx.fillText(set1.title, 50, 50);
+            ctx.fillText(set1.title, canvas.width * 0.1, 50);
             set1.coords = [];
             set1.items.forEach((item, i) => {
                 const y = 100 + i * 80;
                 const isSelected = selectedA !== null && selectedA === i;
-                set1.coords.push({ x: 75, y, value: item });
+                set1.coords.push({ x: canvas.width * 0.1, y, value: item });
                 
                 ctx.beginPath();
-                ctx.arc(75, y, 30, 0, 2 * Math.PI); // Aumento del radio
+                ctx.arc(canvas.width * 0.1, y, 30, 0, 2 * Math.PI);
                 ctx.fillStyle = '#FAEDCD';
                 ctx.fill();
                 ctx.strokeStyle = '#D4A373';
-                ctx.lineWidth = isSelected ? 4 : 2; // Resaltado visual
+                ctx.lineWidth = isSelected ? 4 : 2;
                 ctx.stroke();
 
                 ctx.fillStyle = '#383430';
                 ctx.textAlign = 'center';
-                ctx.fillText(item, 75, y + 5);
+                ctx.fillText(item, canvas.width * 0.1, y + 5);
                 ctx.textAlign = 'start';
             });
 
             // Dibujar Conjunto B
-            ctx.fillText(set2.title, canvas.width - 150, 50);
+            ctx.fillText(set2.title, canvas.width * 0.9, 50);
             set2.coords = [];
             set2.items.forEach((item, i) => {
                 const y = 100 + i * 80;
-                set2.coords.push({ x: canvas.width - 75, y, value: item });
+                set2.coords.push({ x: canvas.width * 0.9, y, value: item });
                 ctx.beginPath();
-                ctx.arc(canvas.width - 75, y, 30, 0, 2 * Math.PI); // Aumento del radio
+                ctx.arc(canvas.width * 0.9, y, 30, 0, 2 * Math.PI);
                 ctx.fillStyle = '#FAEDCD';
                 ctx.fill();
                 ctx.strokeStyle = '#D4A373';
@@ -350,7 +348,7 @@
                 ctx.stroke();
                 ctx.fillStyle = '#383430';
                 ctx.textAlign = 'center';
-                ctx.fillText(item, canvas.width - 75, y + 5);
+                ctx.fillText(item, canvas.width * 0.9, y + 5);
                 ctx.textAlign = 'start';
             });
 
@@ -380,12 +378,12 @@
             let clickedA = -1;
             setA.coords.forEach((c, i) => {
                 const dist = Math.sqrt((x - c.x) ** 2 + (y - c.y) ** 2);
-                if (dist < 30) clickedA = i; // Aumento del área de clic
+                if (dist < 30) clickedA = i;
             });
 
             if (clickedA !== -1) {
                 selectedA = clickedA;
-                drawSets(rCtx, relationCanvas, setA, setB, relations); // Redibujar para mostrar selección
+                drawSets(rCtx, relationCanvas, setA, setB, relations);
                 return;
             }
 
@@ -393,7 +391,7 @@
                 let clickedB = -1;
                 setB.coords.forEach((c, i) => {
                     const dist = Math.sqrt((x - c.x) ** 2 + (y - c.y) ** 2);
-                    if (dist < 30) clickedB = i; // Aumento del área de clic
+                    if (dist < 30) clickedB = i;
                 });
 
                 if (clickedB !== -1) {
@@ -423,7 +421,6 @@
         const functionRuleTitle = document.getElementById('functionRuleTitle');
         const functionRuleText = document.getElementById('functionRuleText');
 
-        // He ajustado las coordenadas para dar más espacio vertical
         const setC = { title: 'Entrada', items: ['Usuario A', 'Usuario B', 'Usuario C'], coords: [] };
         const setD = { title: 'Hash Result', items: ['Hash 1', 'Hash 2', 'Hash 3'], coords: [] };
 
@@ -478,14 +475,12 @@
             const newRow = `<tr><td class="py-1">${x}</td><td class="py-1">${y}</td></tr>`;
             historyTable.innerHTML += newRow;
             
-            // Añadir punto al array y actualizar el gráfico
             machinePoints[rule].push({x, y});
             updateChart(rule);
             
             inputElement.value = '';
         }
 
-        // Lógica para f(x) = x^2
         document.getElementById('processBtn_x2').addEventListener('click', () => {
             processFunction(
                 document.getElementById('input_x2'),
@@ -496,7 +491,6 @@
             );
         });
 
-        // Lógica para f(x) = x + 2
         document.getElementById('processBtn_x+2').addEventListener('click', () => {
             processFunction(
                 document.getElementById('input_x+2'),
@@ -507,7 +501,6 @@
             );
         });
 
-        // Lógica para f(x) = 2x
         document.getElementById('processBtn_2x').addEventListener('click', () => {
             processFunction(
                 document.getElementById('input_2x'),
@@ -518,9 +511,7 @@
             );
         });
 
-        // Lógica para los gráficos
         function updateChart(rule) {
-            // Ordenar los puntos por el valor de x antes de graficar la línea
             const sortedPoints = [...machinePoints[rule]].sort((a, b) => a.x - b.x);
 
             if(charts[rule]) {
@@ -534,7 +525,6 @@
             button.addEventListener('click', (e) => {
                 const rule = e.target.dataset.chart;
                 machinePoints[rule] = [];
-                // También limpiar la tabla de historial
                 document.getElementById(`history_${rule.replace('*', '')}`).innerHTML = '';
                 updateChart(rule);
             });
@@ -583,14 +573,35 @@
             });
         }
         
-        // Inicialización
-        window.onload = () => {
+        function resizeCanvas() {
+            // Reajusta los lienzos para evitar distorsión
+            const relationContainer = document.getElementById('relationCanvas').parentElement;
+            const functionContainer = document.getElementById('functionCanvas').parentElement;
+            
+            relationCanvas.width = relationContainer.clientWidth;
+            relationCanvas.height = Math.min(relationCanvas.width * 0.8, 400); // Mantiene una relación de aspecto razonable
+            
+            functionCanvas.width = functionContainer.clientWidth;
+            functionCanvas.height = Math.min(functionCanvas.width * 0.8, 400);
+            
+            // Redibuja los gráficos después de redimensionar
             drawSets(rCtx, relationCanvas, setA, setB, relations);
+            showIsFunction();
+            // Llama a la función de renderizado de chart.js
+            for (const rule in charts) {
+                charts[rule].resize();
+            }
+        }
+
+        window.onload = () => {
+            resizeCanvas();
             showIsFunction();
             initializeChart('chart_x2', 'x*x');
             initializeChart('chart_x+2', 'x+2');
             initializeChart('chart_2x', '2*x');
         };
+        
+        window.addEventListener('resize', resizeCanvas);
     </script>
 </body>
 </html>
