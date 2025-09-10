@@ -280,6 +280,9 @@
             '2*x': []
         };
         let charts = {};
+        
+        // Mantener el estado actual del ejemplo de función para la sección 2
+        let currentFunctionExample = 'isFunction';
 
         function showSection(sectionId) {
             sections.forEach(section => {
@@ -293,6 +296,13 @@
                     button.classList.add('active');
                 }
             });
+            
+            // Re-renderizar los lienzos al cambiar de sección
+            if (sectionId === 'relation') {
+                drawSets(rCtx, relationCanvas, setA, setB, relations, selectedA);
+            } else if (sectionId === 'function') {
+                drawFunctionCanvas(currentFunctionExample);
+            }
         }
 
         // --- Lógica Sección 1: Relaciones ---
@@ -306,7 +316,7 @@
         let selectedA = null;
         let relations = [];
 
-        function drawSets(ctx, canvas, set1, set2, connections) {
+        function drawSets(ctx, canvas, set1, set2, connections, selectedIndex = null) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.font = 'bold 16px Inter';
             ctx.fillStyle = '#383430';
@@ -316,7 +326,7 @@
             set1.coords = [];
             set1.items.forEach((item, i) => {
                 const y = 100 + i * 80;
-                const isSelected = selectedA !== null && selectedA === i;
+                const isSelected = selectedIndex !== null && selectedIndex === i;
                 set1.coords.push({ x: canvas.width * 0.1, y, value: item });
                 
                 ctx.beginPath();
@@ -383,7 +393,7 @@
 
             if (clickedA !== -1) {
                 selectedA = clickedA;
-                drawSets(rCtx, relationCanvas, setA, setB, relations);
+                drawSets(rCtx, relationCanvas, setA, setB, relations, selectedA);
                 return;
             }
 
@@ -432,28 +442,29 @@
             { from: 0, to: 0 }, { from: 1, to: 1 }, { from: 1, to: 2, color: 'red' }, { from: 2, to: 2 }
         ];
 
-        function showIsFunction() {
-            isFunctionBtn.classList.add('bg-[#D4A373]', 'text-white');
-            isFunctionBtn.classList.remove('bg-gray-300', 'hover:bg-gray-400', 'text-gray-800');
-            notFunctionBtn.classList.remove('bg-[#D4A373]', 'text-white');
-            notFunctionBtn.classList.add('bg-gray-300', 'hover:bg-gray-400', 'text-gray-800');
-            drawSets(fCtx, functionCanvas, setC, setD, functionConnections);
-            functionRuleTitle.textContent = "✔️ Relación de 'Hash' (Es una función)";
-            functionRuleText.textContent = "Cada entrada (usuario) tiene exactamente una única salida (hash). Un mismo usuario siempre genera el mismo hash. Esto es un ejemplo de una función en software.";
-        }
-
-        function showNotFunction() {
-            notFunctionBtn.classList.add('bg-[#D4A373]', 'text-white');
-            notFunctionBtn.classList.remove('bg-gray-300', 'hover:bg-gray-400', 'text-gray-800');
-            isFunctionBtn.classList.remove('bg-[#D4A373]', 'text-white');
-            isFunctionBtn.classList.add('bg-gray-300', 'hover:bg-gray-400', 'text-gray-800');
-            drawSets(fCtx, functionCanvas, setC, setD, notFunctionConnections);
-            functionRuleTitle.textContent = "❌ Relación de 'API Rota' (NO es una función)";
-            functionRuleText.textContent = "La entrada 'Usuario B' tiene dos salidas diferentes, lo que no debería ocurrir. Esto rompe la regla de la función, un escenario común al depurar un método o una API inestable.";
+        function drawFunctionCanvas(example) {
+            currentFunctionExample = example;
+            if (example === 'isFunction') {
+                 isFunctionBtn.classList.add('bg-[#D4A373]', 'text-white');
+                 isFunctionBtn.classList.remove('bg-gray-300', 'hover:bg-gray-400', 'text-gray-800');
+                 notFunctionBtn.classList.remove('bg-[#D4A373]', 'text-white');
+                 notFunctionBtn.classList.add('bg-gray-300', 'hover:bg-gray-400', 'text-gray-800');
+                 drawSets(fCtx, functionCanvas, setC, setD, functionConnections);
+                 functionRuleTitle.textContent = "✔️ Relación de 'Hash' (Es una función)";
+                 functionRuleText.textContent = "Cada entrada (usuario) tiene exactamente una única salida (hash). Un mismo usuario siempre genera el mismo hash. Esto es un ejemplo de una función en software.";
+            } else {
+                 notFunctionBtn.classList.add('bg-[#D4A373]', 'text-white');
+                 notFunctionBtn.classList.remove('bg-gray-300', 'hover:bg-gray-400', 'text-gray-800');
+                 isFunctionBtn.classList.remove('bg-[#D4A373]', 'text-white');
+                 isFunctionBtn.classList.add('bg-gray-300', 'hover:bg-gray-400', 'text-gray-800');
+                 drawSets(fCtx, functionCanvas, setC, setD, notFunctionConnections);
+                 functionRuleTitle.textContent = "❌ Relación de 'API Rota' (NO es una función)";
+                 functionRuleText.textContent = "La entrada 'Usuario B' tiene dos salidas diferentes, lo que no debería ocurrir. Esto rompe la regla de la función, un escenario común al depurar un método o una API inestable.";
+            }
         }
         
-        isFunctionBtn.addEventListener('click', showIsFunction);
-        notFunctionBtn.addEventListener('click', showNotFunction);
+        isFunctionBtn.addEventListener('click', () => drawFunctionCanvas('isFunction'));
+        notFunctionBtn.addEventListener('click', () => drawFunctionCanvas('notFunction'));
 
         // --- Lógica Sección 3: Máquina ---
         function processFunction(inputElement, outputElement, historyTable, func, rule) {
@@ -574,20 +585,16 @@
         }
         
         function resizeCanvas() {
-            // Reajusta los lienzos para evitar distorsión
-            const relationContainer = document.getElementById('relationCanvas').parentElement;
-            const functionContainer = document.getElementById('functionCanvas').parentElement;
+            const canvases = [relationCanvas, functionCanvas];
+            canvases.forEach(canvas => {
+                const container = canvas.parentElement;
+                canvas.width = container.clientWidth;
+                canvas.height = Math.min(canvas.width * 0.8, 400); 
+            });
             
-            relationCanvas.width = relationContainer.clientWidth;
-            relationCanvas.height = Math.min(relationCanvas.width * 0.8, 400); // Mantiene una relación de aspecto razonable
+            drawSets(rCtx, relationCanvas, setA, setB, relations, selectedA);
+            drawFunctionCanvas(currentFunctionExample);
             
-            functionCanvas.width = functionContainer.clientWidth;
-            functionCanvas.height = Math.min(functionCanvas.width * 0.8, 400);
-            
-            // Redibuja los gráficos después de redimensionar
-            drawSets(rCtx, relationCanvas, setA, setB, relations);
-            showIsFunction();
-            // Llama a la función de renderizado de chart.js
             for (const rule in charts) {
                 charts[rule].resize();
             }
@@ -595,7 +602,7 @@
 
         window.onload = () => {
             resizeCanvas();
-            showIsFunction();
+            drawFunctionCanvas('isFunction');
             initializeChart('chart_x2', 'x*x');
             initializeChart('chart_x+2', 'x+2');
             initializeChart('chart_2x', '2*x');
