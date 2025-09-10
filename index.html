@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorador de Funciones y Relaciones</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #383430;
+        }
+        .section {
+            display: none;
+            min-height: 70vh;
+        }
+        .section.active {
+            display: block;
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+        }
+        .nav-button.active {
+            background-color: #D4A373;
+            color: #FEFAE0;
+            font-weight: 700;
+        }
+        .concept-box {
+            background-color: #FEFAE0;
+            border-left: 4px solid #D4A373;
+        }
+        .interactive-canvas {
+            cursor: pointer;
+            border-radius: 0.5rem;
+            border: 2px dashed #E9D8A6;
+            background-color: #FEFCF3;
+        }
+        .function-machine {
+            background: linear-gradient(145deg, #FEFAE0, #FAEDCD);
+            border: 1px solid #E9D8A6;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .machine-pipe {
+            background-color: #E9D8A6;
+        }
+        .machine-body {
+            background-color: #FAEDCD;
+        }
+        .control-button {
+            transition: all 0.2s ease-in-out;
+        }
+        .control-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-[#3D3A37]">Relaciones y Funciones: Fundamentos para Programadores</h1>
+            <p class="text-lg text-gray-600 mt-2">Un vistazo a los conceptos matemáticos detrás del código que escribimos.</p>
+        </header>
+
+        <nav class="flex justify-center bg-[#FAEDCD] p-2 rounded-full shadow-sm mb-12">
+            <button class="nav-button active text-sm md:text-base py-2 px-4 md:px-6 rounded-full" onclick="showSection('relation')">1. Relaciones</button>
+            <button class="nav-button text-sm md:text-base py-2 px-4 md:px-6 rounded-full" onclick="showSection('function')">2. Funciones</button>
+            <button class="nav-button text-sm md:text-base py-2 px-4 md:px-6 rounded-full" onclick="showSection('machine')">3. El Método</button>
+        </nav>
+
+        <main>
+            <!-- Sección 1: Relaciones -->
+            <section id="relation" class="section active">
+                <h2 class="text-3xl font-bold mb-4 text-center">1. Relaciones</h2>
+                <div class="concept-box p-6 rounded-lg mb-6">
+                    <p class="mb-2 text-lg text-gray-800">
+                        Una <strong>relación</strong> es un conjunto de pares ordenados (x, y), donde x pertenece a un conjunto A y y pertenece a un conjunto B. Es una forma de asociar elementos de un conjunto con elementos de otro.
+                    </p>
+                    <p class="text-gray-700">
+                        <strong>Ejemplo matemático:</strong> Considera los conjuntos A = {1, 2, 3} y B = {4, 5, 6}. Una relación R de A a B podría ser R = {(1, 4), (2, 5), (3, 6)}. También podría ser R = {(1, 4), (1, 5), (3, 6)}.
+                    </p>
+                </div>
+                <hr class="my-8 border-gray-300">
+                <div class="concept-box p-6 rounded-lg mb-6">
+                    <h3 class="text-2xl font-semibold mb-3">Ejemplo de Software: Relaciones de Base de Datos</h3>
+                    <p class="mb-2 text-gray-700">
+                        En software, una relación es una conexión entre datos, por ejemplo, en una base de datos de una red social. Una relación puede vincular a los usuarios (Conjunto A) con los posts que han creado (Conjunto B). El par ordenado `(usuario_id, post_id)` representa la relación "creado por".
+                    </p>
+                    <p class="text-center max-w-3xl mx-auto mt-4 text-gray-700">
+                        Para crear una relación, haz clic en un usuario y luego en un post. El usuario seleccionado se resaltará.
+                    </p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div class="w-full">
+                        <canvas id="relationCanvas" class="interactive-canvas w-full" width="500" height="400"></canvas>
+                        <div class="text-center mt-4">
+                             <button id="resetRelationBtn" class="control-button bg-[#D4A373] text-white py-2 px-4 rounded-lg shadow-md">Reiniciar Relación</button>
+                        </div>
+                    </div>
+                    <div class="concept-box p-6 rounded-lg">
+                        <h3 class="text-2xl font-semibold mb-3">Tu Relación Creada (R)</h3>
+                        <p class="mb-4">Los pares ordenados que has formado aparecerán aquí.</p>
+                        <div id="relationPairs" class="bg-white p-4 rounded-md h-48 overflow-y-auto font-mono text-gray-800">
+                           R = { }
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección 2: Funciones -->
+            <section id="function" class="section">
+                <h2 class="text-3xl font-bold mb-4 text-center">2. La Función: Una Relación Especial</h2>
+                <div class="concept-box p-6 rounded-lg mb-6">
+                    <p class="mb-2 text-lg text-gray-800">
+                        Una <strong>función</strong> es una relación con una regla estricta: a cada elemento x de un conjunto A le corresponde <strong>exactamente un</strong> elemento, llamado f(x), de un conjunto B.
+                    </p>
+                    <p class="text-gray-700">
+                        <strong>Ejemplo matemático:</strong> La regla f(x) = x^2 es una función, ya que para cada valor de x solo hay un único valor de x^2. Por ejemplo, f(2) = 4. Aunque f(-2) = 4 también, cada entrada individual tiene solo una salida.
+                    </p>
+                </div>
+                <hr class="my-8 border-gray-300">
+                <div class="concept-box p-6 rounded-lg mb-6">
+                    <h3 class="text-2xl font-semibold mb-3">Ejemplo de Software: Métodos y Funciones</h3>
+                    <p class="text-gray-700">
+                        En programación, una función (o método) es un bloque de código que toma una entrada (parámetro) y produce una salida (valor de retorno). Un buen método es <strong>determinista</strong>: la misma entrada siempre produce la misma salida. Por ejemplo, un método `generarHash(contraseña)` siempre debe devolver el mismo hash para la misma contraseña.
+                    </p>
+                </div>
+                <div class="text-center mb-6">
+                    <span class="mr-4 text-lg">Ver ejemplo:</span>
+                    <button id="isFunctionBtn" class="control-button bg-[#D4A373] text-white py-2 px-4 rounded-lg shadow-md">Es una Función Válida</button>
+                    <button id="notFunctionBtn" class="control-button bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded-lg shadow-md">No es una Función</button>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div class="w-full">
+                        <canvas id="functionCanvas" class="interactive-canvas w-full" width="500" height="400"></canvas>
+                    </div>
+                     <div class="concept-box p-6 rounded-lg">
+                        <h3 id="functionRuleTitle" class="text-2xl font-semibold mb-3">La Lógica de la Relación</h3>
+                        <p id="functionRuleText" class="text-gray-700">
+                           Aquí se explicará por qué el ejemplo actual cumple o no con la regla de una función.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección 3: La Máquina de Funciones -->
+            <section id="machine" class="section">
+                <h2 class="text-3xl font-bold mb-4 text-center">3. El Método</h2>
+                <div class="concept-box p-6 rounded-lg mb-6">
+                    <p class="mb-2 text-lg text-gray-800">
+                       Es útil considerar una función como una <strong>máquina</strong>. Si x está en el dominio de una función f, entonces cuando x entra a la máquina, es aceptada como entrada y la máquina produce una salida f(x) de acuerdo con la regla de la función. El **Dominio** es el conjunto de todas las posibles entradas, y el **Rango** (o Imagen) es el conjunto de todas las posibles salidas.
+                    </p>
+                    <p class="text-gray-700">
+                       **Ejemplo matemático:** Considera la máquina de la función f(x) = 2x. Si la entrada es x = 5, la máquina aplica la regla y la salida es f(5) = 10.
+                    </p>
+                </div>
+                <hr class="my-8 border-gray-300">
+                <div class="concept-box p-6 rounded-lg mb-6">
+                    <h3 class="text-2xl font-semibold mb-3">Ejemplo de Software: Parámetros y Retornos</h3>
+                    <p class="text-gray-700">
+                        Un método es una máquina que toma un parámetro y devuelve un valor. El parámetro es la entrada (variable independiente) y el valor de retorno es la salida (variable dependiente). Un método como `calcularPrecio(cantidad)` acepta `cantidad` como entrada y devuelve un `precio`, que depende de la cantidad.
+                    </p>
+                </div>
+
+                <!-- Contenedor para las 3 máquinas de funciones -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Máquina para f(x) = x^2 -->
+                    <div class="function-machine rounded-xl p-6 flex flex-col items-center">
+                        <h3 class="text-xl font-semibold text-[#D4A373] mb-4">f(x) = x^2</h3>
+                        <div class="machine-pipe w-16 h-8"></div>
+                        <div class="machine-body w-full h-32 rounded-lg flex flex-col justify-center items-center p-2 relative">
+                            <div id="output_x2" class="text-4xl font-bold text-gray-700">?</div>
+                        </div>
+                        <div class="machine-pipe w-16 h-8"></div>
+                        <div class="mt-4 flex flex-col items-center gap-2 w-full">
+                            <input type="number" id="input_x2" placeholder="Entrada x" class="text-center w-3/4 p-2 border rounded-md">
+                            <button id="processBtn_x2" class="control-button bg-[#D4A373] text-white py-2 px-4 rounded-lg shadow-md w-3/4">Ejecutar</button>
+                        </div>
+                        <div class="bg-white p-4 rounded-md h-48 overflow-y-auto mt-4 w-full">
+                             <table class="w-full text-center">
+                                <thead class="border-b-2 border-gray-200">
+                                    <tr>
+                                        <th class="py-1">x</th>
+                                        <th class="py-1">y</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history_x2"></tbody>
+                            </table>
+                        </div>
+                        <div class="w-full mt-4">
+                            <div class="chart-container">
+                                <canvas id="chart_x2"></canvas>
+                            </div>
+                             <button class="control-button bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded-lg shadow-md w-3/4 mt-4 clear-chart-btn" data-chart="x*x">Limpiar Gráfica</button>
+                        </div>
+                    </div>
+
+                    <!-- Máquina para f(x) = x + 2 -->
+                    <div class="function-machine rounded-xl p-6 flex flex-col items-center">
+                        <h3 class="text-xl font-semibold text-[#D4A373] mb-4">f(x) = x + 2</h3>
+                         <div class="machine-pipe w-16 h-8"></div>
+                        <div class="machine-body w-full h-32 rounded-lg flex flex-col justify-center items-center p-2 relative">
+                            <div id="output_x+2" class="text-4xl font-bold text-gray-700">?</div>
+                        </div>
+                        <div class="machine-pipe w-16 h-8"></div>
+                        <div class="mt-4 flex flex-col items-center gap-2 w-full">
+                            <input type="number" id="input_x+2" placeholder="Entrada x" class="text-center w-3/4 p-2 border rounded-md">
+                            <button id="processBtn_x+2" class="control-button bg-[#D4A373] text-white py-2 px-4 rounded-lg shadow-md w-3/4">Ejecutar</button>
+                        </div>
+                        <div class="bg-white p-4 rounded-md h-48 overflow-y-auto mt-4 w-full">
+                             <table class="w-full text-center">
+                                <thead class="border-b-2 border-gray-200">
+                                    <tr>
+                                        <th class="py-1">x</th>
+                                        <th class="py-1">y</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history_x+2"></tbody>
+                            </table>
+                        </div>
+                         <div class="w-full mt-4">
+                            <div class="chart-container">
+                                <canvas id="chart_x+2"></canvas>
+                            </div>
+                             <button class="control-button bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded-lg shadow-md w-3/4 mt-4 clear-chart-btn" data-chart="x+2">Limpiar Gráfica</button>
+                        </div>
+                    </div>
+
+                    <!-- Máquina para f(x) = 2x -->
+                    <div class="function-machine rounded-xl p-6 flex flex-col items-center">
+                        <h3 class="text-xl font-semibold text-[#D4A373] mb-4">f(x) = 2x</h3>
+                         <div class="machine-pipe w-16 h-8"></div>
+                        <div class="machine-body w-full h-32 rounded-lg flex flex-col justify-center items-center p-2 relative">
+                            <div id="output_2x" class="text-4xl font-bold text-gray-700">?</div>
+                        </div>
+                        <div class="machine-pipe w-16 h-8"></div>
+                        <div class="mt-4 flex flex-col items-center gap-2 w-full">
+                            <input type="number" id="input_2x" placeholder="Entrada x" class="text-center w-3/4 p-2 border rounded-md">
+                            <button id="processBtn_2x" class="control-button bg-[#D4A373] text-white py-2 px-4 rounded-lg shadow-md w-3/4">Ejecutar</button>
+                        </div>
+                        <div class="bg-white p-4 rounded-md h-48 overflow-y-auto mt-4 w-full">
+                             <table class="w-full text-center">
+                                <thead class="border-b-2 border-gray-200">
+                                    <tr>
+                                        <th class="py-1">x</th>
+                                        <th class="py-1">y</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history_2x"></tbody>
+                            </table>
+                        </div>
+                         <div class="w-full mt-4">
+                            <div class="chart-container">
+                                <canvas id="chart_2x"></canvas>
+                            </div>
+                             <button class="control-button bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded-lg shadow-md w-3/4 mt-4 clear-chart-btn" data-chart="2*x">Limpiar Gráfica</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const sections = document.querySelectorAll('.section');
+        const navButtons = document.querySelectorAll('.nav-button');
+        
+        // Objeto para almacenar los puntos de cada función
+        let machinePoints = {
+            'x*x': [],
+            'x+2': [],
+            '2*x': []
+        };
+        // Objeto para almacenar las instancias de Chart
+        let charts = {};
+
+        function showSection(sectionId) {
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+
+            navButtons.forEach(button => {
+                button.classList.remove('active');
+                if (button.getAttribute('onclick').includes(sectionId)) {
+                    button.classList.add('active');
+                }
+            });
+        }
+
+        // --- Lógica Sección 1: Relaciones ---
+        const relationCanvas = document.getElementById('relationCanvas');
+        const rCtx = relationCanvas.getContext('2d');
+        const relationPairsDiv = document.getElementById('relationPairs');
+        const resetRelationBtn = document.getElementById('resetRelationBtn');
+        
+        const setA = { title: 'Usuarios', items: ['Alice', 'Bob', 'Charlie'], coords: [] };
+        const setB = { title: 'Posts', items: ['Post 1', 'Post 2', 'Post 3'], coords: [] };
+        let selectedA = null;
+        let relations = [];
+
+        function drawSets(ctx, canvas, set1, set2, connections) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = 'bold 16px Inter';
+            ctx.fillStyle = '#383430';
+
+            // Dibujar Conjunto A
+            ctx.fillText(set1.title, 50, 50);
+            set1.coords = [];
+            set1.items.forEach((item, i) => {
+                const y = 100 + i * 80;
+                const isSelected = selectedA !== null && selectedA === i;
+                set1.coords.push({ x: 75, y, value: item });
+                
+                ctx.beginPath();
+                ctx.arc(75, y, 30, 0, 2 * Math.PI); // Aumento del radio
+                ctx.fillStyle = '#FAEDCD';
+                ctx.fill();
+                ctx.strokeStyle = '#D4A373';
+                ctx.lineWidth = isSelected ? 4 : 2; // Resaltado visual
+                ctx.stroke();
+
+                ctx.fillStyle = '#383430';
+                ctx.textAlign = 'center';
+                ctx.fillText(item, 75, y + 5);
+                ctx.textAlign = 'start';
+            });
+
+            // Dibujar Conjunto B
+            ctx.fillText(set2.title, canvas.width - 150, 50);
+            set2.coords = [];
+            set2.items.forEach((item, i) => {
+                const y = 100 + i * 80;
+                set2.coords.push({ x: canvas.width - 75, y, value: item });
+                ctx.beginPath();
+                ctx.arc(canvas.width - 75, y, 30, 0, 2 * Math.PI); // Aumento del radio
+                ctx.fillStyle = '#FAEDCD';
+                ctx.fill();
+                ctx.strokeStyle = '#D4A373';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.fillStyle = '#383430';
+                ctx.textAlign = 'center';
+                ctx.fillText(item, canvas.width - 75, y + 5);
+                ctx.textAlign = 'start';
+            });
+
+            // Dibujar conexiones
+            connections.forEach(conn => {
+                const start = set1.coords[conn.from];
+                const end = set2.coords[conn.to];
+                ctx.beginPath();
+                ctx.moveTo(start.x + 30, start.y);
+                ctx.lineTo(end.x - 30, end.y);
+                ctx.strokeStyle = conn.color || '#3D3A37';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+        }
+        
+        function updateRelationPairs() {
+            const pairsText = relations.map(r => `(${setA.items[r.from]}, ${setB.items[r.to]})`).join(', ');
+            relationPairsDiv.innerHTML = `R = { ${pairsText} }`;
+        }
+
+        relationCanvas.addEventListener('click', (e) => {
+            const rect = relationCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            let clickedA = -1;
+            setA.coords.forEach((c, i) => {
+                const dist = Math.sqrt((x - c.x) ** 2 + (y - c.y) ** 2);
+                if (dist < 30) clickedA = i; // Aumento del área de clic
+            });
+
+            if (clickedA !== -1) {
+                selectedA = clickedA;
+                drawSets(rCtx, relationCanvas, setA, setB, relations); // Redibujar para mostrar selección
+                return;
+            }
+
+            if (selectedA !== null) {
+                let clickedB = -1;
+                setB.coords.forEach((c, i) => {
+                    const dist = Math.sqrt((x - c.x) ** 2 + (y - c.y) ** 2);
+                    if (dist < 30) clickedB = i; // Aumento del área de clic
+                });
+
+                if (clickedB !== -1) {
+                    const exists = relations.some(r => r.from === selectedA && r.to === clickedB);
+                    if (!exists) {
+                        relations.push({ from: selectedA, to: clickedB });
+                    }
+                    selectedA = null;
+                    drawSets(rCtx, relationCanvas, setA, setB, relations);
+                    updateRelationPairs();
+                }
+            }
+        });
+        
+        resetRelationBtn.addEventListener('click', () => {
+            relations = [];
+            selectedA = null;
+            drawSets(rCtx, relationCanvas, setA, setB, relations);
+            updateRelationPairs();
+        });
+
+        // --- Lógica Sección 2: Funciones ---
+        const functionCanvas = document.getElementById('functionCanvas');
+        const fCtx = functionCanvas.getContext('2d');
+        const isFunctionBtn = document.getElementById('isFunctionBtn');
+        const notFunctionBtn = document.getElementById('notFunctionBtn');
+        const functionRuleTitle = document.getElementById('functionRuleTitle');
+        const functionRuleText = document.getElementById('functionRuleText');
+
+        // He ajustado las coordenadas para dar más espacio vertical
+        const setC = { title: 'Entrada', items: ['Usuario A', 'Usuario B', 'Usuario C'], coords: [] };
+        const setD = { title: 'Hash Result', items: ['Hash 1', 'Hash 2', 'Hash 3'], coords: [] };
+
+        const functionConnections = [
+            { from: 0, to: 0 }, { from: 1, to: 1 }, { from: 2, to: 2 }
+        ];
+
+        const notFunctionConnections = [
+            { from: 0, to: 0 }, { from: 1, to: 1 }, { from: 1, to: 2, color: 'red' }, { from: 2, to: 2 }
+        ];
+
+        function showIsFunction() {
+            isFunctionBtn.classList.add('bg-[#D4A373]', 'text-white');
+            isFunctionBtn.classList.remove('bg-gray-300', 'hover:bg-gray-400', 'text-gray-800');
+            notFunctionBtn.classList.remove('bg-[#D4A373]', 'text-white');
+            notFunctionBtn.classList.add('bg-gray-300', 'hover:bg-gray-400', 'text-gray-800');
+            drawSets(fCtx, functionCanvas, setC, setD, functionConnections);
+            functionRuleTitle.textContent = "✔️ Relación de 'Hash' (Es una función)";
+            functionRuleText.textContent = "Cada entrada (usuario) tiene exactamente una única salida (hash). Un mismo usuario siempre genera el mismo hash. Esto es un ejemplo de una función en software.";
+        }
+
+        function showNotFunction() {
+            notFunctionBtn.classList.add('bg-[#D4A373]', 'text-white');
+            notFunctionBtn.classList.remove('bg-gray-300', 'hover:bg-gray-400', 'text-gray-800');
+            isFunctionBtn.classList.remove('bg-[#D4A373]', 'text-white');
+            isFunctionBtn.classList.add('bg-gray-300', 'hover:bg-gray-400', 'text-gray-800');
+            drawSets(fCtx, functionCanvas, setC, setD, notFunctionConnections);
+            functionRuleTitle.textContent = "❌ Relación de 'API Rota' (NO es una función)";
+            functionRuleText.textContent = "La entrada 'Usuario B' tiene dos salidas diferentes, lo que no debería ocurrir. Esto rompe la regla de la función, un escenario común al depurar un método o una API inestable.";
+        }
+        
+        isFunctionBtn.addEventListener('click', showIsFunction);
+        notFunctionBtn.addEventListener('click', showNotFunction);
+
+        // --- Lógica Sección 3: Máquina ---
+        function processFunction(inputElement, outputElement, historyTable, func, rule) {
+            const x = parseFloat(inputElement.value);
+            if (isNaN(x)) {
+                outputElement.textContent = "Error";
+                return;
+            }
+
+            let y;
+            try {
+                y = func(x);
+            } catch (error) {
+                y = "Error";
+            }
+
+            outputElement.textContent = y;
+            
+            const newRow = `<tr><td class="py-1">${x}</td><td class="py-1">${y}</td></tr>`;
+            historyTable.innerHTML += newRow;
+            
+            // Añadir punto al array y actualizar el gráfico
+            machinePoints[rule].push({x, y});
+            updateChart(rule);
+            
+            inputElement.value = '';
+        }
+
+        // Lógica para f(x) = x^2
+        document.getElementById('processBtn_x2').addEventListener('click', () => {
+            processFunction(
+                document.getElementById('input_x2'),
+                document.getElementById('output_x2'),
+                document.getElementById('history_x2'),
+                (x) => x * x,
+                'x*x'
+            );
+        });
+
+        // Lógica para f(x) = x + 2
+        document.getElementById('processBtn_x+2').addEventListener('click', () => {
+            processFunction(
+                document.getElementById('input_x+2'),
+                document.getElementById('output_x+2'),
+                document.getElementById('history_x+2'),
+                (x) => x + 2,
+                'x+2'
+            );
+        });
+
+        // Lógica para f(x) = 2x
+        document.getElementById('processBtn_2x').addEventListener('click', () => {
+            processFunction(
+                document.getElementById('input_2x'),
+                document.getElementById('output_2x'),
+                document.getElementById('history_2x'),
+                (x) => 2 * x,
+                '2*x'
+            );
+        });
+
+        // Lógica para los gráficos
+        function updateChart(rule) {
+            // Ordenar los puntos por el valor de x antes de graficar la línea
+            const sortedPoints = [...machinePoints[rule]].sort((a, b) => a.x - b.x);
+
+            if(charts[rule]) {
+                charts[rule].data.datasets[0].data = machinePoints[rule];
+                charts[rule].data.datasets[1].data = sortedPoints;
+                charts[rule].update();
+            }
+        }
+        
+        document.querySelectorAll('.clear-chart-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const rule = e.target.dataset.chart;
+                machinePoints[rule] = [];
+                // También limpiar la tabla de historial
+                document.getElementById(`history_${rule.replace('*', '')}`).innerHTML = '';
+                updateChart(rule);
+            });
+        });
+
+        function initializeChart(canvasId, rule) {
+            const cCtx = document.getElementById(canvasId).getContext('2d');
+            charts[rule] = new Chart(cCtx, {
+                data: {
+                    datasets: [
+                        {
+                            label: 'Puntos (x, y)',
+                            data: [],
+                            backgroundColor: '#D4A373',
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
+                            type: 'scatter'
+                        },
+                        {
+                            label: 'Curva de la función',
+                            data: [],
+                            borderColor: '#3D3A37',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0.4,
+                            showLine: true,
+                            type: 'line'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: { display: true, text: 'Eje X (Dominio)'}
+                        },
+                        y: {
+                            title: { display: true, text: 'Eje Y (Rango)'}
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Inicialización
+        window.onload = () => {
+            drawSets(rCtx, relationCanvas, setA, setB, relations);
+            showIsFunction();
+            initializeChart('chart_x2', 'x*x');
+            initializeChart('chart_x+2', 'x+2');
+            initializeChart('chart_2x', '2*x');
+        };
+    </script>
+</body>
+</html>
